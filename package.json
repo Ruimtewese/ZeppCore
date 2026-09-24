@@ -1,0 +1,24 @@
+{
+  "name": "zeppcore",
+  "version": "0.1.0",
+  "description": "A lightweight UI and API toolkit for Zepp OS.",
+  "main": "index.js",
+  "type": "module",
+  "zeppos": true,
+  "keywords": [
+    "zepp",
+    "zepp-os",
+    "amazfit",
+    "bip"
+  ],
+  "author": "Ruimtewese",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ruimtewese/ZeppCore.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Ruimtewese/ZeppCore/issues"
+  },
+  "homepage": "https://github.com/Ruimtewese/ZeppCore#readme"
+}
