@@ -18,7 +18,9 @@ import {
   resetPageBrightTime,
   setWakeUpRelaunch,
   pausePalmScreenOff,
-  resetPalmScreenOff
+  resetPalmScreenOff,
+  pauseDropWristScreenOff,
+  resetDropWristScreenOff
 } from "@zos/display";
 
 import {
@@ -43,7 +45,7 @@ export function setAutoBrightnessEnabled(enabled) {
 
 export function keepScreenAwake(milliseconds = 2147483647) {
   return setPageBrightTime({
-    brightTime: milliseconds
+    brightTime: Math.min(Number(milliseconds), 2147483000)
   });
 }
 
@@ -57,7 +59,7 @@ export function turnScreenOff() {
 
 export function setWakeUpRelaunchEnabled(enabled) {
   return setWakeUpRelaunch({
-    enable: Boolean(enabled)
+    relaunch: Boolean(enabled)
   });
 }
 
@@ -69,6 +71,16 @@ export function pausePalmScreenOffFor(seconds) {
 
 export function resetPalmScreenOffBehavior() {
   return resetPalmScreenOff();
+}
+
+export function pauseWristScreenOffFor(milliseconds) {
+  return pauseDropWristScreenOff({
+    duration: Number(milliseconds)
+  });
+}
+
+export function resetWristScreenOffBehavior() {
+  return resetDropWristScreenOff();
 }
 
 export function getDisplaySettings() {
@@ -98,6 +110,8 @@ export default {
   setWakeUpRelaunchEnabled,
   pausePalmScreenOffFor,
   resetPalmScreenOffBehavior,
+  pauseWristScreenOffFor,
+  resetWristScreenOffBehavior,
   getDisplaySettings,
   getPowerModes,
   isPowerSaving,
