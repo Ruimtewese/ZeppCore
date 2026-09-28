@@ -1173,6 +1173,131 @@ console.log(
 
 ---
 
+
+
+# 22. Audio
+
+**File:** `src/audio.js`
+
+ZeppCore now includes a dedicated audio layer for playback, recording, and built-in system sounds.
+
+The module wraps the native `@zos/media` and `@zos/sensor` audio APIs. Zepp's media API supports audio playback and recording from API_LEVEL 3.0; the documented recorder codec is OPUS. Built-in `SystemSounds` is available from API_LEVEL 3.6. citeturn546201search1turn546201search5turn546201search0
+
+### Playback
+
+- `createAudioPlayer`
+- `setAudioSource`
+- `prepareAudio`
+- `playAudio`
+- `pauseAudio`
+- `resumeAudio`
+- `stopAudio`
+- `getAudioStatus`
+- `getAudioDuration`
+- `getAudioVolume`
+- `setAudioVolume`
+- `getAudioInfo`
+- `getAudioTitle`
+- `getAudioArtist`
+- `seekAudioPercent`
+- `seekAudioSeconds`
+- `onAudioEvent`
+- `playAudioFile`
+
+Example:
+
+```js
+import {
+  playAudioFile
+} from "zeppcore";
+
+const player = playAudioFile(
+  "sounds/beep.mp3",
+  {
+    onComplete() {
+      console.log("Audio finished");
+    }
+  }
+);
+```
+
+Zepp's player supports MP3 and OPUS audio files, including files in the app assets directory and `data://` paths for downloaded audio. citeturn546201search1
+
+### Recording
+
+- `createAudioRecorder`
+- `setAudioRecordTarget`
+- `startAudioRecording`
+- `stopAudioRecording`
+- `onAudioRecordEvent`
+- `recordAudio`
+
+Example:
+
+```js
+import {
+  recordAudio
+} from "zeppcore";
+
+const recorder = recordAudio(
+  "data://recording.opus",
+  {
+    onStart() {
+      console.log("Recording started");
+    },
+
+    onStop() {
+      console.log("Recording stopped");
+    }
+  }
+);
+
+// Later:
+recorder.stop();
+```
+
+The native recorder currently documents OPUS as its supported codec and stores recordings in the mini app's data directory. citeturn546201search5
+
+### Built-in system sounds
+
+- `createSystemSounds`
+- `areSystemSoundsEnabled`
+- `getSystemSoundTypes`
+- `playSystemSound`
+- `stopSystemSound`
+
+Supported built-in sound categories include alarm, message, regular, achievement, camera, high/low abnormal-health sounds, and SOS. System sounds only play when the system ringtone function is enabled. citeturn546201search0
+
+Example:
+
+```js
+import {
+  createSystemSounds,
+  playSystemSound
+} from "zeppcore";
+
+const sounds =
+  createSystemSounds();
+
+const types =
+  sounds.getSourceType();
+
+playSystemSound(
+  types.REGULAR
+);
+```
+
+### API-version notes
+
+- File playback and recording: API_LEVEL 3.0+
+- SystemSounds: API_LEVEL 3.6+
+- Percentage seek: API_LEVEL 4.2+
+- Seek by seconds: API_LEVEL 4.3+
+
+ZeppCore checks for newer seek methods before using them so the same module can still be used on older API targets. citeturn546201search1turn546201search3
+
+---
+
 # Native API access
 
 ZeppCore is a wrapper, not a replacement for Zepp OS.
