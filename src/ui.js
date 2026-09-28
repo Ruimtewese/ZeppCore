@@ -2011,15 +2011,12 @@ export function timePicker(
   const hours = [];
 
   for (
-    let i = 0;
-    i < 24;
+    let i = 1;
+    i <= 12;
     i++
   ) {
     hours.push(
-      String(i).padStart(
-        2,
-        "0"
-      )
+      String(i)
     );
   }
 
@@ -2038,24 +2035,36 @@ export function timePicker(
     );
   }
 
+  const periods = [
+    "AM",
+    "PM"
+  ];
+
+  const safeHour = clamp(
+    hour,
+    0,
+    23
+  );
+
   const selected = {
-    hour:
-      clamp(
-        hour,
-        0,
-        23
-      ),
+    hour12:
+      safeHour % 12 || 12,
 
     minute:
       clamp(
         minute,
         0,
         59
-      )
+      ),
+
+    period:
+      safeHour >= 12
+        ? 1
+        : 0
   };
 
   return picker({
-    columns: 2,
+    columns: 3,
 
     title,
 
@@ -2068,7 +2077,7 @@ export function timePicker(
           true,
 
         init_val_index:
-          selected.hour,
+          selected.hour12 - 1,
 
         font_size:
           32,
@@ -2077,7 +2086,7 @@ export function timePicker(
           42,
 
         col_width:
-          120
+          90
       },
 
       {
@@ -2097,7 +2106,27 @@ export function timePicker(
           42,
 
         col_width:
-          120
+          90
+      },
+
+      {
+        data_array:
+          periods,
+
+        support_loop:
+          false,
+
+        init_val_index:
+          selected.period,
+
+        font_size:
+          30,
+
+        select_font_size:
+          40,
+
+        col_width:
+          90
       }
     ],
 
@@ -2108,13 +2137,25 @@ export function timePicker(
       valueIndex
     ) => {
       if (column === 0) {
-        selected.hour =
-          valueIndex;
+        selected.hour12 =
+          Number(valueIndex) + 1;
       }
 
       if (column === 1) {
         selected.minute =
-          valueIndex;
+          Number(valueIndex);
+      }
+
+      if (column === 2) {
+        selected.period =
+          Number(valueIndex);
+      }
+
+      let selectedHour =
+        selected.hour12 % 12;
+
+      if (selected.period === 1) {
+        selectedHour += 12;
       }
 
       if (onChange) {
@@ -2129,7 +2170,7 @@ export function timePicker(
           valueIndex,
 
           hour:
-            selected.hour,
+            selectedHour,
 
           minute:
             selected.minute
