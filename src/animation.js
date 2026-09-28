@@ -3524,3 +3524,373 @@ const animation = {
 
 
 export default animation;
+
+/* =========================================================
+ * ANIMATION COMPOSITION
+ * =========================================================
+ *
+ * Higher-level orchestration helpers.
+ * ========================================================= */
+
+/**
+ * Run animation factories one after another.
+ *
+ * Each factory receives:
+ *
+ *   done(index)
+ *
+ * and must create an animation with an onComplete callback
+ * that calls done().
+ *
+ * Example:
+ *
+ * sequence([
+ *   (done) => animate(widget, {
+ *     x: [0, 100],
+ *     duration: 300,
+ *     onComplete: done
+ *   }),
+ *   (done) => animate(widget, {
+ *     y: [0, 100],
+ *     duration: 300,
+ *     onComplete: done
+ *   })
+ * ]);
+ */
+export function sequence(
+  factories = [],
+  onComplete = null
+) {
+  const list = Array.isArray(factories)
+    ? factories
+    : [];
+
+  let index = 0;
+  let stopped = false;
+  let current = null;
+
+  function next() {
+    if (stopped) return;
+
+    if (index >= list.length) {
+      if (typeof onComplete === "function") {
+        onComplete();
+      }
+      return;
+    }
+
+    const currentIndex = index++;
+    const factory = list[currentIndex];
+
+    if (typeof factory !== "function") {
+      next();
+      return;
+    }
+
+    current = factory(
+      () => next(),
+      currentIndex
+    );
+  }
+
+  next();
+
+  return {
+    start() {
+      stopped = false;
+      if (!current && index === 0) next();
+      else if (current && typeof current.start === "function") {
+        current.start();
+      }
+      return this;
+    },
+
+    stop() {
+      stopped = true;
+
+      if (
+        current &&
+        typeof current.stop === "function"
+      ) {
+        current.stop();
+      }
+
+      return this;
+    },
+
+    pause() {
+      if (
+        current &&
+        typeof current.pause === "function"
+      ) {
+        current.pause();
+      }
+
+      return this;
+    },
+
+    resume() {
+      if (
+        current &&
+        typeof current.resume === "function"
+      ) {
+        current.resume();
+      }
+
+      return this;
+    },
+
+    getCurrentIndex() {
+      return Math.max(0, index - 1);
+    }
+  };
+}
+
+/**
+ * Start several animation factories together.
+ */
+export function parallel(
+  factories = [],
+  onComplete = null
+) {
+  const list = Array.isArray(factories)
+    ? factories
+    : [];
+
+  if (list.length === 0) {
+    if (typeof onComplete === "function") {
+      onComplete();
+    }
+
+    return {
+      start() { return this; },
+      stop() { return this; },
+      pause() { return this; },
+      resume() { return this; },
+      getCompleted() { return 0; }
+    };
+  }
+
+  let completed = 0;
+  let stopped = false;
+  const handles = [];
+
+  const done = () => {
+    if (stopped) return;
+
+    completed += 1;
+
+    if (
+      completed >= list.length &&
+      typeof onComplete === "function"
+    ) {
+      onComplete();
+    }
+  };
+
+  for (let i = 0; i < list.length; i++) {
+    const factory = list[i];
+
+    if (typeof factory === "function") {
+      handles.push(
+        factory(done, i)
+      );
+    } else {
+      done();
+    }
+  }
+
+  return {
+    start() {
+      for (const handle of handles) {
+        if (
+          handle &&
+          typeof handle.start === "function"
+        ) {
+          handle.start();
+        }
+      }
+
+      return this;
+    },
+
+    stop() {
+      stopped = true;
+
+      for (const handle of handles) {
+        if (
+          handle &&
+          typeof handle.stop === "function"
+        ) {
+          handle.stop();
+        }
+      }
+
+      return this;
+    },
+
+    pause() {
+      for (const handle of handles) {
+        if (
+          handle &&
+          typeof handle.pause === "function"
+        ) {
+          handle.pause();
+        }
+      }
+
+      return this;
+    },
+
+    resume() {
+      stopped = false;
+
+      for (const handle of handles) {
+        if (
+          handle &&
+          typeof handle.resume === "function"
+        ) {
+          handle.resume();
+        }
+      }
+
+      return this;
+    },
+
+    getCompleted() {
+      return completed;
+    },
+
+    getHandles() {
+      return [...handles];
+    }
+  };
+}
+
+/**
+ * Alias for sequence().
+ */
+export function chain(
+  factories = [],
+  onComplete = null
+) {
+  return sequence(
+    factories,
+    onComplete
+  );
+}
+
+/**
+ * Spring-like animation preset.
+ *
+ * Uses Zepp OS's native bounce easing to create a spring-like
+ * overshoot effect without frame/image animation.
+ */
+export function spring(
+  target,
+  properties = {},
+  options = {}
+) {
+  return animate(
+    target,
+    {
+      ...properties,
+      ...options,
+      easing:
+        options.easing ||
+        EASE_BOUNCE
+    }
+  );
+}
+
+/**
+ * Interrupt an animation and immediately start another one.
+ */
+export function interruptAnimation(
+  current,
+  next
+) {
+  if (
+    current &&
+    typeof current.stop === "function"
+  ) {
+    current.stop();
+  }
+
+  if (typeof next === "function") {
+    return next();
+  }
+
+  if (
+    next &&
+    typeof next.start === "function"
+  ) {
+    next.start();
+  }
+
+  return next;
+}
+
+/**
+ * Animate a widget while reporting approximate progress.
+ *
+ * The progress callback receives a value from 0 to 1.
+ */
+export function animateWithProgress(
+  target,
+  options = {},
+  onProgress = null
+) {
+  const duration =
+    Math.max(
+      1,
+      Number(options.duration || 0)
+    );
+
+  const startedAt = Date.now();
+
+  const userFrame =
+    options.onFrame;
+
+  return animate(
+    target,
+    {
+      ...options,
+
+      onFrame(frame) {
+        const elapsed =
+          Date.now() - startedAt;
+
+        const progress =
+          Math.max(
+            0,
+            Math.min(
+              1,
+              elapsed / duration
+            )
+          );
+
+        if (typeof onProgress === "function") {
+          onProgress(progress, frame);
+        }
+
+        if (typeof userFrame === "function") {
+          userFrame(frame);
+        }
+      },
+
+      onComplete(...args) {
+        if (typeof onProgress === "function") {
+          onProgress(1, null);
+        }
+
+        if (
+          typeof options.onComplete ===
+          "function"
+        ) {
+          options.onComplete(...args);
+        }
+      }
+    }
+  );
+}
