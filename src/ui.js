@@ -412,7 +412,9 @@ export function pillAligned(
         color:
           normalColor,
 
-        radius
+        radius,
+
+        alpha: 255
       }
     );
 
@@ -439,45 +441,43 @@ export function pillAligned(
         textSize
     });
 
-  background.addEventListener(
+  function setPressed(pressed) {
+    background.setProperty(
+      prop.MORE,
+      {
+        x,
+        y,
+
+        w,
+        h,
+
+        color:
+          pressed
+            ? pressColor
+            : normalColor,
+
+        radius
+      }
+    );
+  }
+
+  /*
+   * The label sits above the background and can receive
+   * the touch itself. Registering the handlers on the label
+   * makes the whole pill reliably clickable on-device,
+   * including when the user taps directly on the text.
+   */
+  labelWidget.addEventListener(
     event.CLICK_DOWN,
     () => {
-      background.setProperty(
-        prop.MORE,
-        {
-          x,
-          y,
-
-          w,
-          h,
-
-          color:
-            pressColor,
-
-          radius
-        }
-      );
+      setPressed(true);
     }
   );
 
-  background.addEventListener(
+  labelWidget.addEventListener(
     event.CLICK_UP,
     () => {
-      background.setProperty(
-        prop.MORE,
-        {
-          x,
-          y,
-
-          w,
-          h,
-
-          color:
-            normalColor,
-
-          radius
-        }
-      );
+      setPressed(false);
 
       if (onClick) {
         onClick(background);
@@ -2005,147 +2005,133 @@ export function timePicker(
     hour = 12,
     minute = 0,
 
-    onChange = null
+    fontSize = 42,
+    selectFontSize = 48,
+
+    onChange = null,
+
+    closeOnConfirm = true,
+    closeOnCancel = true
   } = options;
 
-
-  const hours = [];
-
-  for (
-    let i = 0;
-    i < 24;
-    i++
-  ) {
-    hours.push(
-      String(i).padStart(
-        2,
-        "0"
-      )
+  const selectedHour =
+    clamp(
+      hour,
+      0,
+      23
     );
-  }
 
-
-  const minutes = [];
-
-  for (
-    let i = 0;
-    i < 60;
-    i++
-  ) {
-    minutes.push(
-      String(i).padStart(
-        2,
-        "0"
-      )
+  const selectedMinute =
+    clamp(
+      minute,
+      0,
+      59
     );
-  }
 
-
-  const selected = {
-    hour:
-      clamp(
-        hour,
-        0,
-        23
-      ),
-
-    minute:
-      clamp(
-        minute,
-        0,
-        59
-      )
-  };
-
-
-  return picker({
-    columns: 2,
-
-    title,
-
-    dataConfig: [
+  const picker =
+    createWidget(
+      widget.WIDGET_TIME_PICKER,
       {
-        data_array:
-          hours,
+        type: 0,
 
-        support_loop:
-          true,
+        style: 1,
 
-        init_val_index:
-          selected.hour,
+        title,
+
+        initHour:
+          selectedHour,
+
+        initMin:
+          selectedMinute,
 
         font_size:
-          32,
+          fontSize,
 
         select_font_size:
-          42,
+          selectFontSize,
 
-        col_width:
-          120
-      },
-
-      {
-        data_array:
-          minutes,
-
-        support_loop:
-          true,
-
-        init_val_index:
-          selected.minute,
-
-        font_size:
-          32,
-
-        select_font_size:
-          42,
-
-        col_width:
-          120
-      }
-    ],
-
-    onChange: (
-      pickerWidget,
-      eventType,
-      column,
-      valueIndex
-    ) => {
-
-      /*
-       * Keep the selected values synchronized.
-       */
-      if (column === 0) {
-        selected.hour =
-          valueIndex;
-      }
-
-      if (column === 1) {
-        selected.minute =
-          valueIndex;
-      }
-
-
-      if (onChange) {
-
-        onChange({
-          picker:
-            pickerWidget,
-
+        picker_cb: (
+          pickerWidget,
           eventType,
-
           column,
+          valueIndex
+        ) => {
+          let currentHour =
+            selectedHour;
 
-          hour:
-            selected.hour,
+          let currentMinute =
+            selectedMinute;
 
-          minute:
-            selected.minute
-        });
+          try {
+            currentHour =
+              Number(
+                pickerWidget.getProperty(
+                  prop.HOUR
+                )
+              );
 
+            currentMinute =
+              Number(
+                pickerWidget.getProperty(
+                  prop.MINUTE
+                )
+              );
+          } catch (error) {
+            /*
+             * Fall back to the initial selection if a
+             * device/runtime does not expose the getter.
+             */
+          }
+
+          if (onChange) {
+            onChange({
+              picker:
+                pickerWidget,
+
+              eventType,
+
+              column,
+
+              valueIndex,
+
+              hour:
+                clamp(
+                  currentHour,
+                  0,
+                  23
+                ),
+
+              minute:
+                clamp(
+                  currentMinute,
+                  0,
+                  59
+                )
+            });
+          }
+
+          if (
+            closeOnConfirm &&
+            eventType === 2
+          ) {
+            deleteWidget(
+              pickerWidget
+            );
+          }
+
+          if (
+            closeOnCancel &&
+            eventType === 0
+          ) {
+            deleteWidget(
+              pickerWidget
+            );
+          }
+        }
       }
-    }
-  });
+    );
+
+  return picker;
 }
 
 
