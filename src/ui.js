@@ -2005,133 +2005,138 @@ export function timePicker(
     hour = 12,
     minute = 0,
 
-    fontSize = 42,
-    selectFontSize = 48,
-
-    onChange = null,
-
-    closeOnConfirm = true,
-    closeOnCancel = true
+    onChange = null
   } = options;
 
-  const selectedHour =
-    clamp(
-      hour,
-      0,
-      23
-    );
+  const hours = [];
 
-  const selectedMinute =
-    clamp(
-      minute,
-      0,
-      59
+  for (
+    let i = 0;
+    i < 24;
+    i++
+  ) {
+    hours.push(
+      String(i).padStart(
+        2,
+        "0"
+      )
     );
+  }
 
-  const picker =
-    createWidget(
-      widget.WIDGET_TIME_PICKER,
+  const minutes = [];
+
+  for (
+    let i = 0;
+    i < 60;
+    i++
+  ) {
+    minutes.push(
+      String(i).padStart(
+        2,
+        "0"
+      )
+    );
+  }
+
+  const selected = {
+    hour:
+      clamp(
+        hour,
+        0,
+        23
+      ),
+
+    minute:
+      clamp(
+        minute,
+        0,
+        59
+      )
+  };
+
+  return picker({
+    columns: 2,
+
+    title,
+
+    dataConfig: [
       {
-        type: 0,
+        data_array:
+          hours,
 
-        style: 1,
+        support_loop:
+          true,
 
-        title,
-
-        initHour:
-          selectedHour,
-
-        initMin:
-          selectedMinute,
+        init_val_index:
+          selected.hour,
 
         font_size:
-          fontSize,
+          32,
 
         select_font_size:
-          selectFontSize,
+          42,
 
-        picker_cb: (
-          pickerWidget,
-          eventType,
-          column,
-          valueIndex
-        ) => {
-          let currentHour =
-            selectedHour;
+        col_width:
+          120
+      },
 
-          let currentMinute =
-            selectedMinute;
+      {
+        data_array:
+          minutes,
 
-          try {
-            currentHour =
-              Number(
-                pickerWidget.getProperty(
-                  prop.HOUR
-                )
-              );
+        support_loop:
+          true,
 
-            currentMinute =
-              Number(
-                pickerWidget.getProperty(
-                  prop.MINUTE
-                )
-              );
-          } catch (error) {
-            /*
-             * Fall back to the initial selection if a
-             * device/runtime does not expose the getter.
-             */
-          }
+        init_val_index:
+          selected.minute,
 
-          if (onChange) {
-            onChange({
-              picker:
-                pickerWidget,
+        font_size:
+          32,
 
-              eventType,
+        select_font_size:
+          42,
 
-              column,
-
-              valueIndex,
-
-              hour:
-                clamp(
-                  currentHour,
-                  0,
-                  23
-                ),
-
-              minute:
-                clamp(
-                  currentMinute,
-                  0,
-                  59
-                )
-            });
-          }
-
-          if (
-            closeOnConfirm &&
-            eventType === 2
-          ) {
-            deleteWidget(
-              pickerWidget
-            );
-          }
-
-          if (
-            closeOnCancel &&
-            eventType === 0
-          ) {
-            deleteWidget(
-              pickerWidget
-            );
-          }
-        }
+        col_width:
+          120
       }
-    );
+    ],
 
-  return picker;
+    onChange: (
+      pickerWidget,
+      eventType,
+      column,
+      valueIndex
+    ) => {
+      if (column === 0) {
+        selected.hour =
+          valueIndex;
+      }
+
+      if (column === 1) {
+        selected.minute =
+          valueIndex;
+      }
+
+      if (onChange) {
+        onChange({
+          picker:
+            pickerWidget,
+
+          eventType,
+
+          column,
+
+          valueIndex,
+
+          hour:
+            selected.hour,
+
+          minute:
+            selected.minute
+        });
+      }
+    }
+  });
 }
 
 
