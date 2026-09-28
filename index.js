@@ -34,6 +34,7 @@ export * from "./src/components.js";
 export * from "./src/logger.js";
 export * from "./src/permissions.js";
 export * from "./src/compatibility.js";
+export * from "./src/audio.js";
 
 export {
   default as animation
