@@ -159,6 +159,51 @@ Reusable Zepp UI wrappers and higher-level controls.
 - `circle`
 - `arc`
 
+### Custom fonts
+
+All ZeppCore components that render text accept an optional `font` path.
+
+Example:
+
+```js
+const title = text({
+  x: 20,
+  y: 40,
+  w: 350,
+  h: 50,
+  value: "My Alarm",
+  size: 32,
+  font: "fonts/MyFont.ttf"
+});
+```
+
+For buttons and pills:
+
+```js
+pillAligned({
+  x: 20,
+  y: 120,
+  w: 350,
+  h: 60,
+  text: "START",
+  font: "fonts/MyFont.ttf"
+});
+```
+
+For the general picker and the built-in time/date picker helpers, the same `font` option is applied to the picker columns:
+
+```js
+timePicker({
+  hour: 7,
+  minute: 30,
+  font: "fonts/MyFont.ttf"
+});
+```
+
+The font is optional. When `font` is omitted, ZeppCore does not send a font override, so Zepp OS uses its normal default font.
+
+Put custom font files in your application's assets/resources according to the Zepp OS project structure, then reference the resource path such as `fonts/MyFont.ttf`.
+
 ### Progress
 
 - `progressBar`
