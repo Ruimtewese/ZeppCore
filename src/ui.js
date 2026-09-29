@@ -396,6 +396,8 @@ export function pillAligned(
     radius =
       Math.floor(h / 2),
 
+    font,
+
     onClick = null
   } = options;
 
@@ -438,7 +440,9 @@ export function pillAligned(
         textColor,
 
       size:
-        textSize
+        textSize,
+
+      font
     });
 
   function setPressed(pressed) {
@@ -1142,6 +1146,8 @@ export function switchControl(
     textColor = theme.text,
     textSize = 20,
 
+    font,
+
     radius =
       Math.floor(h / 2),
 
@@ -1171,6 +1177,10 @@ export function switchControl(
 
         text_size:
           textSize,
+
+        ...(font !== undefined
+          ? { font }
+          : {}),
 
         normal_color:
           checked
@@ -1220,6 +1230,10 @@ export function switchControl(
 
         text_size:
           textSize,
+
+        ...(font !== undefined
+          ? { font }
+          : {}),
 
         normal_color:
           checked
@@ -1298,6 +1312,8 @@ export function checkbox(
 
     textSize = 28,
 
+    font,
+
     radius = 14,
 
     onChange = null
@@ -1326,6 +1342,10 @@ export function checkbox(
 
         text_size:
           textSize,
+
+        ...(font !== undefined
+          ? { font }
+          : {}),
 
         normal_color:
           checked
@@ -1454,6 +1474,8 @@ export function radioGroup(
 
     textSize = 22,
 
+    font,
+
     radius = 20,
 
     onChange = null
@@ -1503,6 +1525,10 @@ export function radioGroup(
 
             text_size:
               textSize,
+
+            ...(font !== undefined
+              ? { font }
+              : {}),
 
             normal_color:
               index === currentIndex
@@ -1572,6 +1598,10 @@ export function radioGroup(
 
             text_size:
               textSize,
+
+            ...(font !== undefined
+              ? { font }
+              : {}),
 
             normal_color:
               index === currentIndex
@@ -1672,6 +1702,8 @@ export function inputField(
 
     textSize = 22,
 
+    font,
+
     radius =
       Math.floor(h / 2),
 
@@ -1708,6 +1740,10 @@ export function inputField(
         text_size:
           textSize,
 
+        ...(font !== undefined
+          ? { font }
+          : {}),
+
         normal_color:
           backgroundColor,
 
@@ -1743,6 +1779,10 @@ export function inputField(
 
         text_size:
           textSize,
+
+        ...(font !== undefined
+          ? { font }
+          : {}),
 
         normal_color:
           backgroundColor,
@@ -1899,6 +1939,8 @@ export function picker(
     normalColor,
     selectColor,
 
+    font,
+
     initialColumn = 0,
 
     onChange = null,
@@ -1906,12 +1948,33 @@ export function picker(
     closeOnConfirm = true
   } = options;
 
+  const fontDataConfig =
+    Array.isArray(dataConfig)
+      ? dataConfig.map(
+          (column) => {
+            if (
+              !column ||
+              font === undefined
+            ) {
+              return column;
+            }
+
+            return {
+              ...column,
+              font_name:
+                column.font_name ??
+                font
+            };
+          }
+        )
+      : dataConfig;
+
   const params = {
     nb_of_columns:
       columns,
 
     data_config:
-      dataConfig,
+      fontDataConfig,
 
     init_col_index:
       initialColumn
@@ -2005,6 +2068,8 @@ export function timePicker(
     hour = 12,
     minute = 0,
 
+    font,
+
     onChange = null
   } = options;
 
@@ -2067,6 +2132,8 @@ export function timePicker(
     columns: 3,
 
     title,
+
+    font,
 
     dataConfig: [
       {
@@ -2203,6 +2270,8 @@ export function datePicker(
     startYear = 2020,
     endYear = 2035,
 
+    font,
+
     onChange = null
   } = options;
 
@@ -2280,6 +2349,8 @@ export function datePicker(
     columns: 3,
 
     title,
+
+    font,
 
     dataConfig: [
       {
@@ -2484,6 +2555,8 @@ export function sectionTitle(
 
     size = 16,
 
+    font,
+
     alignH =
       align.LEFT
   } = options;
@@ -2500,6 +2573,8 @@ export function sectionTitle(
 
     color,
     size,
+
+    font,
 
     alignH,
 
@@ -2528,7 +2603,9 @@ export function header(
       theme.text,
 
     subtitleColor =
-      theme.textMuted
+      theme.textMuted,
+
+    font
   } = options;
 
   const widgets = [];
@@ -2554,6 +2631,8 @@ export function header(
 
       size:
         titleSize,
+
+      font,
 
       alignH:
         align.LEFT,
@@ -2585,6 +2664,8 @@ export function header(
 
         size:
           subtitleSize,
+
+        font,
 
         alignH:
           align.LEFT,
@@ -2636,6 +2717,8 @@ export function infoCard(
     valueSize = 34,
     subtitleSize = 15,
 
+    font,
+
     onClick = null
   } = options;
 
@@ -2682,6 +2765,8 @@ export function infoCard(
       size:
         titleSize,
 
+      font,
+
       alignH:
         align.LEFT,
 
@@ -2711,6 +2796,8 @@ export function infoCard(
 
       size:
         valueSize,
+
+      font,
 
       alignH:
         align.LEFT,
@@ -2744,6 +2831,8 @@ export function infoCard(
 
         size:
           subtitleSize,
+
+        font,
 
         alignH:
           align.LEFT,
@@ -2786,6 +2875,8 @@ export function statCard(
 
     valueSize = 30,
     labelSize = 14,
+
+    font,
 
     radius =
       theme.radius,
@@ -2836,6 +2927,8 @@ export function statCard(
       size:
         labelSize,
 
+      font,
+
       alignH:
         align.LEFT,
 
@@ -2865,6 +2958,8 @@ export function statCard(
 
       size:
         valueSize,
+
+      font,
 
       alignH:
         align.LEFT,
@@ -2910,6 +3005,8 @@ export function settingRow(
 
     titleSize = 20,
     descriptionSize = 14,
+
+    font,
 
     onChange = null,
     onClick = null
@@ -2958,6 +3055,8 @@ export function settingRow(
       size:
         titleSize,
 
+      font,
+
       alignH:
         align.LEFT,
 
@@ -2992,6 +3091,8 @@ export function settingRow(
 
         size:
           descriptionSize,
+
+        font,
 
         alignH:
           align.LEFT,
@@ -3028,6 +3129,8 @@ export function settingRow(
         switchHeight,
 
       value,
+
+      font,
 
       onChange
     });
@@ -3081,6 +3184,8 @@ export function buttonRow(
     descriptionColor =
       theme.textMuted,
 
+    font,
+
     onClick = null,
     onCardClick = null
   } = options;
@@ -3128,6 +3233,8 @@ export function buttonRow(
 
       size: 20,
 
+      font,
+
       alignH:
         align.LEFT,
 
@@ -3161,6 +3268,8 @@ export function buttonRow(
           descriptionColor,
 
         size: 14,
+
+        font,
 
         alignH:
           align.LEFT,
@@ -3200,6 +3309,8 @@ export function buttonRow(
         buttonText,
 
       textSize: 17,
+
+      font,
 
       onClick
     });
